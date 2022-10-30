@@ -33,3 +33,10 @@ const utils = new Utils({
 node app.js
 ```
 
+### 下载图片
+
+- 在当前路径打开终端
+
+- ```sh
+  aria2c.exe -c -i ./1-20.txt
+  ```
