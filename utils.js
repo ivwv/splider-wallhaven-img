@@ -39,8 +39,7 @@ class Utils {
       "accept-language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
       "cache-control": "no-cache",
       pragma: "no-cache",
-      "sec-ch-ua":
-        '"Google Chrome";v="107", "Chromium";v="108", "Not=A?Brand";v="24"',
+      "sec-ch-ua": '"Google Chrome";v="107", "Chromium";v="108", "Not=A?Brand";v="24"',
       "sec-ch-ua-mobile": "?0",
       "sec-ch-ua-platform": '"Windows"',
       "sec-fetch-dest": "empty",
@@ -66,14 +65,11 @@ class Utils {
   getPageHTML = async (page) => {
     return new Promise(async (resolve) => {
       try {
-        await this.sleep(200);
+        // await this.sleep(10);
         // 获取页面的html元素
-        const { data: res } = await axios(
-          `https://wallhaven.cc/${this.type}?page=${page}`,
-          {
-            headers: this.headers(page),
-          }
-        );
+        const { data: res } = await axios(`https://wallhaven.cc/${this.type}?page=${page}`, {
+          headers: this.headers(page),
+        });
         // 将返回的html返回
         resolve(res);
       } catch (error) {
@@ -81,13 +77,9 @@ class Utils {
         // 做出相应的处理 即等待5秒或自己设定的时间
         console.log(error.message);
         console.log("出错了，正在重试");
-        await this.sleep(5000);
-        const { data: res } = await axios(
-          `https://wallhaven.cc/${this.type}?page=${page}`,
-          {
-            headers: this.headers(page),
-          }
-        );
+        await this.sleep(2000);
+        // 递归调用getPageHTML方法
+        const res = await this.getPageHTML(page);
         resolve(res);
       }
     });
@@ -104,9 +96,7 @@ class Utils {
       const imgInfoList = [];
       // 找到所有的相应元素
       const figure = $("section.thumb-listing-page >ul >li >figure");
-      const thumb_info = $(
-        "section.thumb-listing-page >ul >li >figure>.thumb-info"
-      );
+      const thumb_info = $("section.thumb-listing-page >ul >li >figure>.thumb-info");
       // 处理每个元素 获取图片地址和相关信息保存起来，用于后面文件命令
       figure.each((index, item) => {
         // 判断每一个 thumb_info 子元素 是否有 .png
@@ -133,9 +123,7 @@ class Utils {
           // 表示图片是 jpg 格式的图片
           this.handleImgUrl($(item).find("img").attr("data-src"), false);
           //   获取图片地址;
-          const imgSrc = this.handleImgUrl(
-            $(item).find("img").attr("data-src")
-          );
+          const imgSrc = this.handleImgUrl($(item).find("img").attr("data-src"));
           // 获取图片ID
           const imgId = imgSrc.split("/").slice(-1)[0].split(".")[0];
           // 获取图片尺寸
@@ -193,9 +181,7 @@ class Utils {
             out=p${item.page}-${item.index}-[${item.imgSize}]-${item.imgId}.${
           item.isPng ? "png" : "jpg"
         }
-            dir=${
-              this.isPageDir ? `${this.parentDir}/${item.page}` : this.parentDir
-            }
+            dir=${this.isPageDir ? `${this.parentDir}/${item.page}` : this.parentDir}
             user-agent=${
               this.userAgent
                 ? this.userAgent
@@ -203,7 +189,9 @@ class Utils {
             }\r\n`;
       });
       // 调用fs模块写入文件
-      fs.writeFileSync(`./${this.from}-${this.to}.txt`, text, { flag: "a" });
+      fs.writeFileSync(`./${this.type}-${this.from}-${this.to}.txt`, text, {
+        flag: "a",
+      });
       console.log(`第${this.page}页图片信息写入成功`);
       //   判断是否是最后一页
       if (this.page === this.to) {
